@@ -12,17 +12,14 @@
  * - We'd implement caching for performance
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { benefitsService } from '@/services/benefitsService';
+import { NextResponse } from 'next/server';
+import { calculateTotalBenefits } from '../../_data/employeeStore';
 
 export async function GET() {
   try {
-    const response = await benefitsService.calculateTotalBenefits();
-    return NextResponse.json(response);
+    const total = await calculateTotalBenefits();
+    return NextResponse.json({ data: total, status: 'success' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to calculate total benefits' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to calculate total benefits', status: 'error' }, { status: 500 });
   }
 } 

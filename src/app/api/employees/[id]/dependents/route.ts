@@ -12,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { benefitsService } from '@/services/benefitsService';
+import { addDependent, updateDependent, deleteDependent } from '../../../_data/employeeStore';
 import { CreateDependentRequest, Dependent } from '@/types/benefits';
 
 export async function POST(
@@ -20,17 +20,14 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body: CreateDependentRequest = await request.json();
-    const response = await benefitsService.createDependent({
-      ...body,
-      employeeId: params.id,
-    });
-    return NextResponse.json(response);
+    const body = await request.json();
+    const dependent = await addDependent({ ...body, employeeId: params.id });
+    if (!dependent) {
+      return NextResponse.json({ error: 'Employee not found', status: 'error' }, { status: 404 });
+    }
+    return NextResponse.json({ data: dependent, status: 'success' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create dependent' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to add dependent', status: 'error' }, { status: 500 });
   }
 }
 
@@ -39,20 +36,14 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body: Dependent = await request.json();
-    if (body.employeeId !== params.id) {
-      return NextResponse.json(
-        { error: 'Employee ID mismatch' },
-        { status: 400 }
-      );
+    const body = await request.json();
+    const updated = await updateDependent({ ...body, employeeId: params.id });
+    if (!updated) {
+      return NextResponse.json({ error: 'Employee or dependent not found', status: 'error' }, { status: 404 });
     }
-    const response = await benefitsService.updateDependent(body);
-    return NextResponse.json(response);
+    return NextResponse.json({ data: updated, status: 'success' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to update dependent' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update dependent', status: 'error' }, { status: 500 });
   }
 }
 
@@ -61,13 +52,17 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { dependentId } = await request.json();
-    const response = await benefitsService.deleteDependent(params.id, dependentId);
-    return NextResponse.json(response);
+    const body = await request.json();
+    const { dependentId } = body;
+    if (!dependentId) {
+      return NextResponse.json({ error: 'Dependent ID is required', status: 'error' }, { status: 400 });
+    }
+    const success = await deleteDependent(params.id, dependentId);
+    if (!success) {
+      return NextResponse.json({ error: 'Employee or dependent not found', status: 'error' }, { status: 404 });
+    }
+    return NextResponse.json({ status: 'success' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to delete dependent' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to delete dependent', status: 'error' }, { status: 500 });
   }
 } 

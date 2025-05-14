@@ -1,0 +1,46 @@
+[
+  {
+    "id": "91f14fd2-d7e5-405b-a08d-9aa1dbfc5794",
+    "type": "employee",
+    "dependents": [
+      {
+        "id": "0ed044f1-5dcd-40bf-883c-8bf16cccce99",
+        "type": "dependent",
+        "firstName": "Mary",
+        "lastName": "Smith",
+        "employeeId": "91f14fd2-d7e5-405b-a08d-9aa1dbfc5794"
+      }
+    ],
+    "firstName": "John",
+    "lastName": "Smith"
+  },
+  {
+    "id": "4f445bcd-9d0d-4983-99c8-a3250cc68c28",
+    "type": "employee",
+    "dependents": [
+      {
+        "id": "59c6cb57-3f1d-4662-baef-c7591e37424f",
+        "type": "dependent",
+        "firstName": "Jane",
+        "lastName": "Miller",
+        "employeeId": "4f445bcd-9d0d-4983-99c8-a3250cc68c28"
+      },
+      {
+        "id": "4fcc3cf2-8793-4566-8425-d1009369c600",
+        "type": "dependent",
+        "firstName": "Johnathon",
+        "lastName": "Miller",
+        "employeeId": "4f445bcd-9d0d-4983-99c8-a3250cc68c28"
+      }
+    ],
+    "firstName": "AAron",
+    "lastName": "Miller"
+  },
+  {
+    "id": "ec430775-d1e9-4cf8-8aa3-65448d647aa0",
+    "type": "employee",
+    "dependents": [],
+    "firstName": "Bill",
+    "lastName": "Fremont"
+  }
+]

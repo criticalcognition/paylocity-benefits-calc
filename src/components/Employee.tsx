@@ -19,7 +19,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Card, Button, ListGroup, Badge } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
-import { deleteEmployee, deleteDependent } from '@/store/benefitsSlice';
+import {
+  deleteEmployeeAsync,
+  deleteDependentAsync,
+} from '@/store/benefitsSlice';
 import { Employee as EmployeeType, Dependent, BenefitsCalculation } from '@/types/benefits';
 import EmployeeForm from './EmployeeForm';
 import DependentForm from './DependentForm';
@@ -37,15 +40,18 @@ const Employee: React.FC<EmployeeProps> = React.memo(({ employee, benefits }) =>
 
   const handleDeleteEmployee = useCallback(() => {
     if (window.confirm('Are you sure you want to delete this employee?')) {
-      dispatch(deleteEmployee(employee.id));
+      dispatch(deleteEmployeeAsync(employee.id));
     }
   }, [dispatch, employee.id]);
 
-  const handleDeleteDependent = useCallback((dependentId: string) => {
-    if (window.confirm('Are you sure you want to delete this dependent?')) {
-      dispatch(deleteDependent({ employeeId: employee.id, dependentId }));
-    }
-  }, [dispatch, employee.id]);
+  const handleDeleteDependent = useCallback(
+    (dependentId: string) => {
+      if (window.confirm('Are you sure you want to delete this dependent?')) {
+        dispatch(deleteDependentAsync({ employeeId: employee.id, dependentId }));
+      }
+    },
+    [dispatch, employee.id]
+  );
 
   const handleEditDependent = useCallback((dependent: Dependent) => {
     setEditingDependent(dependent);
@@ -63,17 +69,18 @@ const Employee: React.FC<EmployeeProps> = React.memo(({ employee, benefits }) =>
   }, []);
 
   // Calculate if employee gets a discount
-  const hasDiscount = useMemo(() => 
-    employee.firstName.startsWith('A'),
+  const hasDiscount = useMemo(
+    () => employee.firstName.toLowerCase().startsWith('a'),
     [employee.firstName]
   );
 
   // Format currency
-  const formatCurrency = useCallback((amount: number) => 
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount),
+  const formatCurrency = useCallback(
+    (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }).format(amount),
     []
   );
 
@@ -89,10 +96,10 @@ const Employee: React.FC<EmployeeProps> = React.memo(({ employee, benefits }) =>
               </Badge>
             )}
           </h5>
-          <small className="text-muted">
-            Benefits Cost: {formatCurrency(benefits.totalCost)}/year
-            {' '}({formatCurrency(benefits.perPaycheck)}/paycheck)
-          </small>
+          <div className="text-muted">
+            <div>Yearly Cost: {formatCurrency(benefits.perYear)}</div>
+            <div>Per Paycheck: {formatCurrency(benefits.perPaycheck)}</div>
+          </div>
         </div>
         <div>
           <Button
@@ -125,7 +132,7 @@ const Employee: React.FC<EmployeeProps> = React.memo(({ employee, benefits }) =>
         </div>
         <ListGroup>
           {employee.dependents.map(dependent => {
-            const hasDependentDiscount = dependent.firstName.startsWith('A');
+            const hasDependentDiscount = dependent.firstName.toLowerCase().startsWith('a');
             return (
               <ListGroup.Item
                 key={dependent.id}

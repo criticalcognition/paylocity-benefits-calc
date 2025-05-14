@@ -12,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { benefitsService } from '@/services/benefitsService';
+import { getEmployeeById, updateEmployee, deleteEmployee, calculateBenefits } from '../../_data/employeeStore';
 import { Employee } from '@/types/benefits';
 
 export async function GET(
@@ -20,13 +20,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const response = await benefitsService.calculateBenefits(params.id);
-    return NextResponse.json(response);
+    const employee = await getEmployeeById(params.id);
+    if (!employee) {
+      return NextResponse.json({ error: 'Employee not found', status: 'error' }, { status: 404 });
+    }
+    const benefits = calculateBenefits(employee);
+    return NextResponse.json({ data: benefits, status: 'success' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch employee benefits' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch employee benefits', status: 'error' }, { status: 500 });
   }
 }
 
@@ -35,20 +36,14 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body: Employee = await request.json();
-    if (body.id !== params.id) {
-      return NextResponse.json(
-        { error: 'Employee ID mismatch' },
-        { status: 400 }
-      );
+    const body = await request.json();
+    const updated = await updateEmployee({ ...body, id: params.id });
+    if (!updated) {
+      return NextResponse.json({ error: 'Employee not found', status: 'error' }, { status: 404 });
     }
-    const response = await benefitsService.updateEmployee(body);
-    return NextResponse.json(response);
+    return NextResponse.json({ data: updated, status: 'success' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to update employee' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update employee', status: 'error' }, { status: 500 });
   }
 }
 
@@ -57,12 +52,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const response = await benefitsService.deleteEmployee(params.id);
-    return NextResponse.json(response);
+    const success = await deleteEmployee(params.id);
+    if (!success) {
+      return NextResponse.json({ error: 'Employee not found', status: 'error' }, { status: 404 });
+    }
+    return NextResponse.json({ status: 'success' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to delete employee' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to delete employee', status: 'error' }, { status: 500 });
   }
 } 

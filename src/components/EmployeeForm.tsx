@@ -1,24 +1,24 @@
 /**
- * @description Modal form component for creating and editing employees
+ * @description
+ * Modal form for adding or editing an employee.
+ * Uses Redux thunks for all mutations.
  * 
- * Performance Notes:
- * - Using React.memo to prevent unnecessary re-renders
- * - Form state is managed locally to prevent unnecessary Redux updates
- * - Input validation is done on change to provide immediate feedback
- * 
- * Component Evolution Notes:
- * - Could be split into smaller components for better maintainability
- * - Could add form validation library (e.g., Formik, React Hook Form)
- * - Could add more sophisticated error handling
- * - Could add loading states
- * - Could add success/error notifications
+ * Key features:
+ * - Handles both add and edit modes.
+ * - Validates input and shows errors.
+ * - Closes modal on success.
  */
 
-import React, { useState, useCallback } from 'react';
-import { Modal, Form, Button } from 'react-bootstrap';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
-import { addEmployee, updateEmployee } from '@/store/benefitsSlice';
-import { Employee, CreateEmployeeRequest } from '@/types/benefits';
+import {
+  addEmployeeAsync,
+  updateEmployeeAsync,
+  fetchEmployees,
+  fetchTotalBenefits,
+} from '@/store/benefitsSlice';
+import { Employee } from '@/types/benefits';
 
 interface EmployeeFormProps {
   show: boolean;
@@ -28,89 +28,83 @@ interface EmployeeFormProps {
 
 const EmployeeForm: React.FC<EmployeeFormProps> = React.memo(({ show, onHide, employee }) => {
   const dispatch = useDispatch();
-  const [formData, setFormData] = useState<CreateEmployeeRequest>({
-    firstName: employee?.firstName || '',
-    lastName: employee?.lastName || '',
-  });
-  const [errors, setErrors] = useState<Partial<CreateEmployeeRequest>>({});
+  const [firstName, setFirstName] = useState(employee?.firstName || '');
+  const [lastName, setLastName] = useState(employee?.lastName || '');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const validateForm = useCallback(() => {
-    const newErrors: Partial<CreateEmployeeRequest> = {};
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    }
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  useEffect(() => {
+    setFirstName(employee?.firstName || '');
+    setLastName(employee?.lastName || '');
+    setError(null);
+  }, [employee, show]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError(null);
 
-    try {
-      if (employee) {
-        dispatch(updateEmployee({ ...employee, ...formData }));
-      } else {
-        dispatch(addEmployee(formData));
+      if (!firstName.trim() || !lastName.trim()) {
+        setError('First and last name are required.');
+        return;
       }
-      onHide();
-    } catch (error) {
-      console.error('Failed to save employee:', error);
-      // In a real app, we'd show an error notification
-    }
-  }, [dispatch, employee, formData, onHide, validateForm]);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name as keyof CreateEmployeeRequest]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
-    }
-  }, [errors]);
+      setSubmitting(true);
+      try {
+        if (employee) {
+          await dispatch(
+            updateEmployeeAsync({ ...employee, firstName: firstName.trim(), lastName: lastName.trim() })
+          ).unwrap();
+        } else {
+          await dispatch(
+            addEmployeeAsync({ firstName: firstName.trim(), lastName: lastName.trim() })
+          ).unwrap();
+        }
+        await dispatch(fetchEmployees());
+        await dispatch(fetchTotalBenefits());
+        onHide();
+      } catch (err: any) {
+        setError(err.message || 'Failed to save employee');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [dispatch, employee, firstName, lastName, onHide]
+  );
 
   return (
     <Modal show={show} onHide={onHide} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>{employee ? 'Edit Employee' : 'Add Employee'}</Modal.Title>
-      </Modal.Header>
       <Form onSubmit={handleSubmit}>
+        <Modal.Header closeButton>
+          <Modal.Title>{employee ? 'Edit Employee' : 'Add Employee'}</Modal.Title>
+        </Modal.Header>
         <Modal.Body>
-          <Form.Group className="mb-3">
+          {error && <Alert variant="danger">{error}</Alert>}
+          <Form.Group className="mb-3" controlId="employeeFirstName">
             <Form.Label>First Name</Form.Label>
             <Form.Control
               type="text"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              isInvalid={!!errors.firstName}
+              value={firstName}
+              onChange={e => setFirstName(e.target.value)}
+              autoFocus
+              required
             />
-            <Form.Control.Feedback type="invalid">
-              {errors.firstName}
-            </Form.Control.Feedback>
           </Form.Group>
-          <Form.Group className="mb-3">
+          <Form.Group className="mb-3" controlId="employeeLastName">
             <Form.Label>Last Name</Form.Label>
             <Form.Control
               type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              isInvalid={!!errors.lastName}
+              value={lastName}
+              onChange={e => setLastName(e.target.value)}
+              required
             />
-            <Form.Control.Feedback type="invalid">
-              {errors.lastName}
-            </Form.Control.Feedback>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={onHide}>
+          <Button variant="secondary" onClick={onHide} disabled={submitting}>
             Cancel
           </Button>
-          <Button variant="primary" type="submit">
+          <Button type="submit" variant="primary" disabled={submitting}>
             {employee ? 'Save Changes' : 'Add Employee'}
           </Button>
         </Modal.Footer>

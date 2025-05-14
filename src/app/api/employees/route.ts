@@ -12,30 +12,24 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { benefitsService } from '@/services/benefitsService';
+import { getAllEmployees, addEmployee } from '../_data/employeeStore';
 import { CreateEmployeeRequest } from '@/types/benefits';
 
 export async function GET() {
   try {
-    const response = await benefitsService.getEmployees();
-    return NextResponse.json(response);
+    const employees = await getAllEmployees();
+    return NextResponse.json({ data: employees, status: 'success' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch employees' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch employees', status: 'error' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CreateEmployeeRequest = await request.json();
-    const response = await benefitsService.createEmployee(body);
-    return NextResponse.json(response);
+    const body = await request.json();
+    const employee = await addEmployee(body);
+    return NextResponse.json({ data: employee, status: 'success' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create employee' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to add employee', status: 'error' }, { status: 500 });
   }
 } 

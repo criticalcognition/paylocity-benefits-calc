@@ -37,6 +37,8 @@ export interface BenefitsCalculation {
   totalCost: number;
   perPaycheck: number;
   perYear: number;
+  paycheckAfterDeductions: number;
+  paycheckBeforeDeductions: number;
 }
 
 // Constants for benefits calculation
