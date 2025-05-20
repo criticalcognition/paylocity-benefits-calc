@@ -168,10 +168,10 @@ export function calculateBenefits(employee: Employee): BenefitsCalculation {
 }
 
 export async function calculateTotalBenefits(): Promise<BenefitsCalculation> {
-  const employees = await readStore();
-  const all = employees.map(calculateBenefits);
+  const employees: Employee[] = await readStore();
+  const all: BenefitsCalculation[] = employees.map(calculateBenefits);
   return all.reduce(
-    (acc, curr) => ({
+    (acc: BenefitsCalculation, curr: BenefitsCalculation) => ({
       employeeCost: acc.employeeCost + curr.employeeCost,
       dependentCost: acc.dependentCost + curr.dependentCost,
       discount: acc.discount + curr.discount,

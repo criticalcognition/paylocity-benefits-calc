@@ -12,6 +12,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/store/store';
 import {
   addEmployeeAsync,
   updateEmployeeAsync,
@@ -27,7 +28,7 @@ interface EmployeeFormProps {
 }
 
 const EmployeeForm: React.FC<EmployeeFormProps> = React.memo(({ show, onHide, employee }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [firstName, setFirstName] = useState(employee?.firstName || '');
   const [lastName, setLastName] = useState(employee?.lastName || '');
   const [error, setError] = useState<string | null>(null);

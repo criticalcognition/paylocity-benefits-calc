@@ -19,6 +19,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Card, Button, ListGroup, Badge } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/store/store';
 import {
   deleteEmployeeAsync,
   deleteDependentAsync,
@@ -33,7 +34,7 @@ interface EmployeeProps {
 }
 
 const Employee: React.FC<EmployeeProps> = React.memo(({ employee, benefits }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [showEmployeeForm, setShowEmployeeForm] = useState(false);
   const [showDependentForm, setShowDependentForm] = useState(false);
   const [editingDependent, setEditingDependent] = useState<Dependent | undefined>();

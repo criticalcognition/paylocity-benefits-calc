@@ -13,7 +13,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/store/store';
+import { RootState, AppDispatch } from '@/store/store';
 import {
   fetchEmployees,
   fetchTotalBenefits,
@@ -25,7 +25,7 @@ import Employee from './Employee';
 import EmployeeForm from './EmployeeForm';
 
 const EmployeeList: React.FC = React.memo(() => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { employees, loading, error, totalBenefits, employeeBenefits } = useSelector(
     (state: RootState) => state.benefits
   );
@@ -64,24 +64,12 @@ const EmployeeList: React.FC = React.memo(() => {
     []
   );
 
-  if (loading) {
-    return (
-      <Container className="py-4">
-        <Alert variant="info">Loading...</Alert>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container className="py-4">
-        <Alert variant="danger">{error}</Alert>
-      </Container>
-    );
-  }
-
   return (
     <Container className="py-4">
+      {error && (
+        <Alert variant="danger" className="mb-4">{error}</Alert>
+      )}
+
       {/* Total Benefits Summary */}
       <Card className="mb-4">
         <Card.Header>

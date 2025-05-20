@@ -12,6 +12,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/store/store';
 import {
   addDependentAsync,
   updateDependentAsync,
@@ -29,7 +30,7 @@ interface DependentFormProps {
 
 const DependentForm: React.FC<DependentFormProps> = React.memo(
   ({ show, onHide, employeeId, dependent }) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const [firstName, setFirstName] = useState(dependent?.firstName || '');
     const [lastName, setLastName] = useState(dependent?.lastName || '');
     const [error, setError] = useState<string | null>(null);
