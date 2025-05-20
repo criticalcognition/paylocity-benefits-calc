@@ -75,11 +75,22 @@ const mockBenefits: BenefitsCalculation = {
 };
 
 describe('Employee', () => {
+  const defaultProps = {
+    showInlineDependentEdit: false,
+    setShowInlineDependentEdit: jest.fn(),
+    editingDependent: null,
+    setEditingDependent: jest.fn(),
+  };
+
   it('renders employee information correctly', () => {
     const store = createMockStore();
     render(
       <Provider store={store}>
-        <Employee employee={mockEmployee} benefits={mockBenefits} />
+        <Employee 
+          employee={mockEmployee} 
+          benefits={mockBenefits} 
+          {...defaultProps}
+        />
       </Provider>
     );
 
@@ -109,7 +120,11 @@ describe('Employee', () => {
 
     render(
       <Provider store={store}>
-        <Employee employee={employeeWithDiscount} benefits={mockBenefits} />
+        <Employee 
+          employee={employeeWithDiscount} 
+          benefits={mockBenefits} 
+          {...defaultProps}
+        />
       </Provider>
     );
 
@@ -122,7 +137,11 @@ describe('Employee', () => {
     const store = createMockStore();
     render(
       <Provider store={store}>
-        <Employee employee={mockEmployee} benefits={mockBenefits} />
+        <Employee 
+          employee={mockEmployee} 
+          benefits={mockBenefits} 
+          {...defaultProps}
+        />
       </Provider>
     );
 
@@ -138,7 +157,11 @@ describe('Employee', () => {
     const store = createMockStore();
     render(
       <Provider store={store}>
-        <Employee employee={mockEmployee} benefits={mockBenefits} />
+        <Employee 
+          employee={mockEmployee} 
+          benefits={mockBenefits} 
+          {...defaultProps}
+        />
       </Provider>
     );
 
@@ -156,7 +179,11 @@ describe('Employee', () => {
 
     render(
       <Provider store={store}>
-        <Employee employee={mockEmployee} benefits={mockBenefits} />
+        <Employee 
+          employee={mockEmployee} 
+          benefits={mockBenefits} 
+          {...defaultProps}
+        />
       </Provider>
     );
 
@@ -176,7 +203,11 @@ describe('Employee', () => {
 
     render(
       <Provider store={store}>
-        <Employee employee={mockEmployee} benefits={mockBenefits} />
+        <Employee 
+          employee={mockEmployee} 
+          benefits={mockBenefits} 
+          {...defaultProps}
+        />
       </Provider>
     );
 
@@ -188,5 +219,33 @@ describe('Employee', () => {
     expect(confirmSpy).toHaveBeenCalledWith('Are you sure you want to delete this dependent?');
 
     confirmSpy.mockRestore();
+  });
+
+  // Add new test for inline dependent editing
+  it('handles inline dependent editing', () => {
+    const store = createMockStore();
+    const setShowInlineDependentEdit = jest.fn();
+    const setEditingDependent = jest.fn();
+
+    render(
+      <Provider store={store}>
+        <Employee 
+          employee={mockEmployee} 
+          benefits={mockBenefits} 
+          showInlineDependentEdit={false}
+          setShowInlineDependentEdit={setShowInlineDependentEdit}
+          editingDependent={null}
+          setEditingDependent={setEditingDependent}
+        />
+      </Provider>
+    );
+
+    // Click edit button for dependent
+    const editButtons = screen.getAllByText('Edit');
+    fireEvent.click(editButtons[1]); // Second Edit button is for dependent
+
+    // Check if inline edit was triggered
+    expect(setEditingDependent).toHaveBeenCalledWith(mockEmployee.dependents[0]);
+    expect(setShowInlineDependentEdit).toHaveBeenCalledWith(true);
   });
 }); 

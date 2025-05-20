@@ -23,6 +23,7 @@ import {
 } from '@/store/benefitsSlice';
 import Employee from './Employee';
 import EmployeeForm from './EmployeeForm';
+import { Employee as EmployeeType, Dependent, BenefitsCalculation } from '@/types/benefits';
 
 const EmployeeList: React.FC = React.memo(() => {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,6 +31,8 @@ const EmployeeList: React.FC = React.memo(() => {
     (state: RootState) => state.benefits
   );
   const [showEmployeeForm, setShowEmployeeForm] = useState(false);
+  const [showInlineDependentEdit, setShowInlineDependentEdit] = useState(false);
+  const [editingDependent, setEditingDependent] = useState<Dependent | null>(null);
 
   // Fetch all data on mount
   useEffect(() => {
@@ -111,18 +114,20 @@ const EmployeeList: React.FC = React.memo(() => {
           <Employee
             key={employee.id}
             employee={employee}
-            benefits={
-              employeeBenefits[employee.id] || {
-                employeeCost: 0,
-                dependentCost: 0,
-                discount: 0,
-                totalCost: 0,
-                perPaycheck: 0,
-                perYear: 0,
-                paycheckAfterDeductions: 2000,
-                paycheckBeforeDeductions: 2000,
-              }
-            }
+            benefits={employeeBenefits[employee.id] || {
+              employeeCost: 0,
+              dependentCost: 0,
+              discount: 0,
+              totalCost: 0,
+              perPaycheck: 0,
+              perYear: 0,
+              paycheckAfterDeductions: 2000,
+              paycheckBeforeDeductions: 2000,
+            }}
+            showInlineDependentEdit={showInlineDependentEdit}
+            setShowInlineDependentEdit={setShowInlineDependentEdit}
+            editingDependent={editingDependent}
+            setEditingDependent={setEditingDependent}
           />
         ))
       )}
